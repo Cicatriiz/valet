@@ -1,6 +1,6 @@
 import { getTool, listTools } from "@/server/agent/tools";
 import { SYSTEM_PROMPT, STYLE_PROMPT } from "@/server/llm/prompt";
-import { getOpenAI } from "@/server/llm/openai";
+import { getOpenAIForUser } from "@/server/llm/openai";
 import { z } from "zod";
 
 export const userMessageSchema = z.object({ role: z.literal("user"), content: z.string() });
@@ -11,7 +11,7 @@ export type ChatMessage = z.infer<typeof messageSchema>;
 
 export async function* handleChat(messages: ChatMessage[], ctx: { userId: string | null }) {
   const last = messages[messages.length - 1];
-  const openai = getOpenAI();
+  const openai = await getOpenAIForUser(ctx.userId);
 
   // Minimal planner: if the user asks to send email, draft first and request approval on send
   if (last && last.role === "user") {
