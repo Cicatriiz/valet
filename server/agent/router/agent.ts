@@ -9,25 +9,36 @@ export const messageSchema = z.union([userMessageSchema, assistantMessageSchema]
 
 export type ChatMessage = z.infer<typeof messageSchema>;
 
-export async function* handleChat(messages: ChatMessage[], ctx: { userId: string | null }) {
-  const last = messages[messages.length - 1];
-  const openai = await getOpenAIForUser(ctx.userId);
+export async function* handleChat(messages: ChatMessage[], ctx: { userId: string | null; apiKey?: string | null }) {
+  const openai = await getOpenAIForUser(ctx.userId, ctx.apiKey ?? undefined);
+  if (openai) {
+    // Use Responses API with full conversation history
+    const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
+    const input = [
+      { role: "system", content: SYSTEM_PROMPT },
+      { role: "system", content: STYLE_PROMPT },
+      ...messages.map((m) => ({ role: m.role, content: typeof m.content === "string" ? m.content : JSON.stringify(m.content) })),
+    ];
 
-  // Minimal planner: if the user asks to send email, draft first and request approval on send
-  if (last && last.role === "user") {
-    const text = last.content.toLowerCase();
-    if (text.includes("email") && text.includes("send")) {
-      yield { type: "text", data: "Plan: draft email, then request approval to send." } as const;
-      return;
-    }
-    if (text.includes("grocer") && (text.includes("buy") || text.includes("order"))) {
-      yield { type: "text", data: "Plan: build groceries cart and await approval for checkout." } as const;
-      return;
+    try {
+      // The Responses API expects { model, input: { messages } }
+      const resp: any = await openai.responses.create({
+        model,
+        input: { messages: input }
+      });
+      const text: string = resp.output_text ?? "";
+      if (text) {
+        yield { type: "text", data: text } as const;
+        return;
+      }
+    } catch {
+      // fall through to tools list on error
     }
   }
 
-  const content = `Available tools: ${listTools().map((t) => t.name).join(", ")}`;
-  yield { type: "text", data: content } as const;
+  // Fallback when no key or error
+  const fallback = `Available tools: ${listTools().map((t) => t.name).join(", ")}`;
+  yield { type: "text", data: fallback } as const;
 }
 
 export async function callToolByName(name: string, args: unknown, ctx: { userId: string | null }) {

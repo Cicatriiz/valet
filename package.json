@@ -14,7 +14,8 @@
     "test:unit": "vitest run",
     "test:e2e": "playwright test",
     "test:e2e:video": "PW_VIDEO=on playwright test",
-    "demo:gif": "bash scripts/make-demo-gif.sh"
+    "demo:gif": "bash scripts/make-demo-gif.sh",
+    "deploy:vercel": "vercel --prod --confirm"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.10.0",

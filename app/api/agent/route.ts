@@ -10,12 +10,12 @@ export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id ?? null;
 
-  const { messages } = await req.json();
+  const { messages, apiKey } = await req.json();
 
   const stream = new ReadableStream({
     async start(controller) {
       const encoder = new TextEncoder();
-      for await (const chunk of handleChat(messages, { userId })) {
+      for await (const chunk of handleChat(messages, { userId, apiKey: apiKey ?? null })) {
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(chunk)}\n\n`));
       }
       controller.close();

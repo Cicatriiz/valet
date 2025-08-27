@@ -1,12 +1,39 @@
 ## Valet
 
-Valet is a secure, extensible executive assistant with a clean web UI, approvals, and an audit trail. It can draft emails, manage calendars, take notes, create reminders, and build a demo groceries cart — with human approval before any irreversible action.
+Valet is a secure, extensible executive assistant with a modern chat UI, approvals, and an audit trail. It can draft emails, manage calendars, take notes, create reminders, and build a demo groceries cart — with human approval before any irreversible action.
 
-### Demo goals for reviewers
+### Highlights
 
-- See the chat experience and planned actions
-- Approve an action (e.g., email send or calendar create) and see audit entries
-- Optionally connect Google to list emails/events
+- Modern Next.js App Router UI with a multi-chat sidebar (create, rename, delete), animated bubbles, timestamps, and streaming replies
+- Client-only OpenAI key storage (Settings → OpenAI) with optional server-side encrypted storage if configured
+- Typed tool registry (Zod) and safe tool-calling with approvals for risky actions
+- Append-only audit logging; RBAC with NextAuth Google
+- Dev-friendly: Vitest unit tests, Playwright E2E (with optional video), and clear docs
+
+---
+
+## Quickstart
+
+1) Install deps and set up DB
+```bash
+pnpm install
+pnpm prisma:migrate
+pnpm db:seed
+```
+
+2) Configure environment
+```bash
+cp .env.example .env
+# edit .env with your values (or keep USE_MOCK_LLM=true for demo)
+```
+
+3) Start the app
+```bash
+pnpm dev
+# http://localhost:3000 (Playwright will auto-run on 3030 when using e2e tests)
+```
+
+4) Open Settings → OpenAI and paste your API key (client-only). You can also sign in with Google to enable email/calendar tools.
 
 ---
 
@@ -22,20 +49,25 @@ Valet is a secure, extensible executive assistant with a clean web UI, approvals
 
 ## Features
 
-- Chat with SSE streaming and planned actions summary
+- Chat with SSE streaming, multi-chat management, and animated UI
 - Approvals: irreversible/spend-money actions require explicit approval
 - Audit Log: append-only records with timestamps and user IDs
-- Tools (typed via zod):
-  - email_list, email_draft, email_send (approval)
-  - calendar_list, calendar_create (approval), calendar_update (approval)
-  - notes_upsert (Notion adapter)
-  - reminders_create
-  - groceries_build_cart, groceries_checkout (approval), groceries_link
-  - memory_read, memory_write
-- Integrations:
-  - Google Gmail/Calendar via NextAuth Google account
-  - Notion via NOTION_TOKEN (optional)
-  - Demo Groceries provider
+- Tools (typed via zod): email_*, calendar_*, notes_upsert (Notion), reminders_create, groceries_*, memory_*
+- Integrations: Google (Gmail/Calendar), Notion, Demo Groceries
+
+---
+
+## Scripts
+
+```bash
+pnpm prisma:generate   # Prisma codegen
+pnpm prisma:migrate    # Apply dev migrations
+pnpm db:seed           # Seed demo user and sample task
+pnpm test:unit         # Vitest (unit)
+pnpm test:e2e          # Playwright (starts dev server on 3030)
+pnpm demo:gif          # Convert Playwright video to GIF (scripts/make-demo-gif.sh)
+pnpm deploy:vercel     # Deploy via Vercel CLI (requires login or VERCEL_TOKEN)
+```
 
 ---
 
@@ -71,7 +103,7 @@ Copy `.env.example` to `.env` and set the following:
 - NOTION_TOKEN (optional) and NOTION_DEFAULT_DATABASE_ID (optional)
 - GROCERIES_DEMO=true
 
-User-specific OpenAI keys are stored encrypted in the `Secret` table.
+User-specific OpenAI keys can be stored client-only (localStorage). If `ENCRYPTION_KEY` is set, server-side encrypted storage is also supported.
 
 ---
 
@@ -84,7 +116,7 @@ pnpm db:seed
 pnpm dev
 ```
 
-Run at `http://localhost:3030` (Playwright webServer). If you run `pnpm dev` without Playwright, it defaults to 3000.
+Run at `http://localhost:3000`. Playwright e2e config will auto-start on port 3030.
 
 ---
 
@@ -95,26 +127,17 @@ pnpm test:unit   # Vitest
 pnpm test:e2e    # Playwright (auto-starts dev server on 3030)
 ```
 
----
-
-## Approvals & Audit
-
-- Tools can be flagged `requiresApproval`. The agent creates a Pending approval with a human-readable summary.
-- Approvals UI lists pending items with Approve/Reject buttons.
-- On approval, the tool’s `execute` handler runs and writes to the `AuditLog`.
-
----
-
-## Integrations
-
-- Google: Connect via Settings → Google → Connect (NextAuth). Then `email_list`/`calendar_list` will return live data.
-- Notion: Set `NOTION_TOKEN` (and optional default DB) in env to enable `notes_upsert` into Notion.
-- Groceries: Demo provider returns mock prices and a shareable link; checkout requires approval.
+To record videos and make a GIF:
+```bash
+pnpm test:e2e:video
+pnpm demo:gif
+```
 
 ---
 
 ## Deployment (Vercel + Neon Postgres)
 
+Option A: Vercel Dashboard
 1) Create a Neon Postgres and copy the connection string
 2) Push the repo to GitHub
 3) Vercel → New Project → Import repo
@@ -133,11 +156,19 @@ If the DB is fresh, run migrations (either via Vercel Postgres integration or lo
 DATABASE_URL="<prod-url>" pnpm prisma migrate deploy
 ```
 
+Option B: Vercel CLI
+```bash
+pnpm dlx vercel@latest login
+pnpm deploy:vercel
+```
+
+See `docs/DEPLOY.md` and `docs/README.md` for more.
+
 ---
 
 ## Security
 
-- No secrets in client or logs; user API keys encrypted at rest
+- No secrets in client or logs; user API keys encrypted at rest when stored server-side
 - Idempotent, audit-logged actions
 - Approval-gated irreversible/spend actions
 - Strict TypeScript + zod validation at all edges
@@ -149,4 +180,3 @@ DATABASE_URL="<prod-url>" pnpm prisma migrate deploy
 - Port in use: kill process on 3030 or set a different port
 - If Prisma types lag after migrations, re-run `pnpm prisma generate`
 - Clear Next cache on odd dev errors: remove `.next` and restart
-

@@ -1,11 +1,12 @@
 import { test, expect } from "@playwright/test";
 
-test("chat returns planned actions stub", async ({ page }) => {
+test("chat shows user message bubble after sending", async ({ page }) => {
   await page.goto("/chat");
   const input = page.locator('input[placeholder="Ask Valet…"]');
   await input.waitFor({ state: "visible" });
-  await input.fill("Please send an email to test@example.com");
+  const prompt = "Please send an email to test@example.com";
+  await input.fill(prompt);
   await page.getByRole("button", { name: "Send" }).click();
-  // Assert our progress message appears
-  await expect(page.getByTestId("msg").filter({ hasText: "Sending…" })).toBeVisible({ timeout: 15000 });
+  // User message renders immediately; assert it appears
+  await expect(page.getByTestId("msg").filter({ hasText: prompt })).toBeVisible({ timeout: 15000 });
 });

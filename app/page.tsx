@@ -8,6 +8,15 @@ export default function Home() {
         <a className="underline" href="/approvals">Approvals</a>
         <a className="underline" href="/tasks">Tasks</a>
       </div>
+      <div className="mt-6 rounded border p-4 space-y-2">
+        <div className="font-medium">How to use</div>
+        <ol className="list-decimal list-inside text-sm space-y-1">
+          <li>Go to Settings → add your OpenAI key (or use mock mode)</li>
+          <li>Open Chat and ask for help (e.g., “Summarize this…”)</li>
+          <li>When Valet proposes an action, approve it in Approvals</li>
+          <li>Review results and audit entries</li>
+        </ol>
+      </div>
     </div>
   );
 }
