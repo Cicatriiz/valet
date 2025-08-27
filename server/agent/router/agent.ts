@@ -15,16 +15,20 @@ export async function* handleChat(messages: ChatMessage[], ctx: { userId: string
     // Use Responses API with full conversation history
     const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
     const input = [
-      { role: "system", content: SYSTEM_PROMPT },
-      { role: "system", content: STYLE_PROMPT },
-      ...messages.map((m) => ({ role: m.role, content: typeof m.content === "string" ? m.content : JSON.stringify(m.content) })),
+      { type: "message" as const, role: "system" as const, content: SYSTEM_PROMPT },
+      { type: "message" as const, role: "system" as const, content: STYLE_PROMPT },
+      ...messages.map((m) => ({
+        type: "message" as const,
+        role: (m.role as "user" | "assistant"),
+        content: typeof m.content === "string" ? m.content : JSON.stringify(m.content),
+      })),
     ];
 
     try {
-      // The Responses API expects { model, input: { messages } }
+      // Send conversation directly as input array (system + user/assistant turns)
       const resp: any = await openai.responses.create({
         model,
-        input: { messages: input }
+        input,
       });
       const text: string = resp.output_text ?? "";
       if (text) {
