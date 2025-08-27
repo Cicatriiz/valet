@@ -2,6 +2,8 @@
 
 Valet is a secure, extensible executive assistant with a modern chat UI, approvals, and an audit trail. It can draft emails, manage calendars, take notes, create reminders, and build a demo groceries cart — with human approval before any irreversible action.
 
+![Demo](valetdemo_clean.gif)
+
 ### Highlights
 
 - Modern Next.js App Router UI with a multi-chat sidebar (create, rename, delete), animated bubbles, timestamps, and streaming replies
