@@ -1,5 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<string[]>([]);
@@ -39,18 +41,22 @@ export default function ChatPage() {
   }, []);
 
   return (
-    <div className="p-6 space-y-4">
-      <div className="space-y-2">
-        {messages.map((m, i) => (
-          <div key={i} data-testid="msg" className="rounded border p-3 bg-white/5">
-            {m}
-          </div>
-        ))}
-      </div>
-      <div className="flex gap-2">
-        <input ref={inputRef} className="flex-1 border rounded px-3 py-2 bg-transparent" placeholder="Ask Valet…" />
-        <button onClick={send} className="px-4 py-2 rounded bg-black text-white">Send</button>
-      </div>
+    <div className="grid gap-4 md:grid-cols-3">
+      <Card className="md:col-span-2">
+        <CardContent className="space-y-2 p-4">
+          {messages.map((m, i) => (
+            <div key={i} data-testid="msg" className="max-w-[80%] rounded-2xl border p-3 bg-white dark:bg-white/10">
+              {m}
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+      <Card>
+        <CardContent className="p-4 space-y-2">
+          <Input ref={inputRef} placeholder="Ask Valet…" />
+          <button onClick={send} className="w-full px-4 py-2 rounded-md bg-black text-white">Send</button>
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -27,6 +27,7 @@ model User {
   approvals      Approval[]
   memories       Memory[]
   tasks          Task[]
+  secrets        Secret[]
 }
 
 enum Role {
@@ -116,6 +117,19 @@ model ProviderToken {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, provider])
+}
+
+model Secret {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    String
+  key       String
+  value     String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, key])
 }
 
 model Memory {

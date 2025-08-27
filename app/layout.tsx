@@ -26,15 +26,19 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <main className="p-8">
-          <nav className="mb-6 flex gap-4 text-sm">
-            <Link href="/">Home</Link>
-            <Link href="/chat">Chat</Link>
-            <Link href="/approvals">Approvals</Link>
-            <Link href="/settings">Settings</Link>
-            <Link href="/tasks">Tasks</Link>
-          </nav>
-          {children}
+        <main className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-black dark:to-gray-950">
+          <header className="sticky top-0 z-10 border-b bg-white/60 backdrop-blur dark:bg-black/40">
+            <div className="mx-auto max-w-5xl px-6 h-14 flex items-center justify-between">
+              <Link href="/" className="font-semibold">Valet</Link>
+              <nav className="flex gap-4 text-sm">
+                <Link href="/chat">Chat</Link>
+                <Link href="/approvals">Approvals</Link>
+                <Link href="/settings">Settings</Link>
+                <Link href="/tasks">Tasks</Link>
+              </nav>
+            </div>
+          </header>
+          <div className="mx-auto max-w-5xl p-6">{children}</div>
         </main>
       </body>
     </html>
